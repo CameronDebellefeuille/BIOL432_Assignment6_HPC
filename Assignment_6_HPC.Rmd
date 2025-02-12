@@ -9,14 +9,85 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Libraries
+## 1. Github
 
-```{r eval=F}
+[Github](https://github.com/CameronDebellefeuille/BIOL432_Assignment6_HPC)
+
+## 2. New R Markdown
+
+Complete.
+
+## 3. Libraries
+
+```{r, eval=F}
 library(doParallel)
 library(parallel)
 library(foreach)
 ```
 
+## 4. detectCores()
 
+```{r}
+cores <- detectCores()
+```
 
+The output of the detectCores() functions indicates my computer has **8 cores**.
 
+## 5. Creating a loop and 6. Tracking the time
+
+```{r}
+Start <- Sys.time()
+for (i in 1:10)
+  mean(rnorm(100000, mean = 10, sd = 3))
+}
+SerTime <- Sys.time() - Start
+SerTime
+```
+
+## 7. Predicting time improvement with multiple threads
+
+```{r}
+PredTime <- SerTime / cores # divide the serial loop time by number of cores
+PredTime
+```
+
+```{r}
+pred_timediff <- SerTime - PredTime
+pred_timediff
+```
+
+Since my computer has 8 cores, the time to run 8 simultaneous loops is around 3.3 seconds. Therefore, the run time improved by 23 seconds.
+
+## 8. Running the loop in parallel and 9. Calculating new run time
+
+```{r}
+# Setting up
+cores <- detectCores() - 1
+cluster <- makeCluster(cores)
+registerDoParallel(cluster)
+
+# Running loop
+Start2 <- Sys.time()
+results <- foreach(i = 1:4000, .combine=rbind) %dopar% {
+  x <- mean(rnorm(100000, mean = 10, sd = 3))
+}
+ParaTime <- Sys.time() - Start2
+
+# Freeing up cores
+stopCluster(cluster)
+
+print(ParaTime)
+```
+
+## 10. Comparing serial loop time vs parallel loop time
+
+```{r}
+test_timediff <- SerTime - ParaTime
+print(test_timediff)
+```
+
+```{r}
+ParaTime - PredTime
+```
+
+The **serial loop** time was around **25 seconds longer** than the **parallel** time. Additionally, the **real parallel** time was around **10 seconds longer** than the **predicted**. This is likely due to the additional steps involved in the parallel loop. These steps include the printing of the output for each iteration which occurs by default in the foreach() function, the assignment of that output to a variable, only 7 out of the 8 cores were used, and finally, it takes time to combine the chunks with combine=rbind which futher extends the run time.
