@@ -17,11 +17,6 @@ library(parallel)
 library(foreach)
 ```
 
-```{r}
-
-```
-
-
 
 
 
