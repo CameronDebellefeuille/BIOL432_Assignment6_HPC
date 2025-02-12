@@ -56,7 +56,7 @@ pred_timediff <- SerTime - PredTime # Expected time saved
 pred_timediff
 ```
 
-Since my system has **8 cores**, the predicted runtime is **approximately 1/8th of the serial execution time**. The estimated time improvement is around **29.8 seconds**.
+Since my system has **8 cores**, the predicted runtime is **approximately 1/8th of the serial execution time (3.3 seconds)**. The estimated time improvement is around **23.0 seconds**.
 
 ## 8. Running the loop in parallel and 9. Calculating new run time
 
@@ -69,7 +69,7 @@ registerDoParallel(cluster)
 # Running loop
 Start2 <- Sys.time()
 results <- foreach(i = 1:4000, .combine=rbind) %dopar% {
-  x <- mean(rnorm(100000, mean = 10, sd = 3))
+  mean(rnorm(100000, mean = 10, sd = 3))
 }
 ParaTime <- Sys.time() - Start2
 
@@ -90,4 +90,4 @@ print(time_saved)
 ParaTime - PredTime
 ```
 
-The parallel loop was approximately **21.4 seconds faster** than the serial loop. However, the actual parallel execution time was **8.5 seconds longer** than the theoretical prediction. This discrepancy is due to the initializing of clusters, the printing of iteration results, and the utilization of only 7 out of 8 cores. Most importantly however, **data merging** (combine = rbind) added extra computation time, as it was necessary to merge results from parallel loops, leading to a slower-than-expected runtime.
+The parallel loop was approximately **17.1 seconds faster** than the serial loop. However, the actual parallel execution time was **5.9 seconds slower** than the theoretical prediction. This discrepancy is due to the initializing of clusters, the printing of iteration results, and the utilization of only 7 out of 8 cores. Most importantly however, **data merging** (combine = rbind) added extra computation time, as it was necessary to merge results from parallel loops, leading to a slower-than-expected runtime.
