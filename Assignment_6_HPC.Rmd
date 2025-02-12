@@ -19,7 +19,7 @@ Complete.
 
 ## 3. Libraries
 
-```{r, eval=F}
+```{r, warning=F}
 library(doParallel)
 library(parallel)
 library(foreach)
@@ -37,7 +37,7 @@ The output of the detectCores() functions indicates my computer has **8 cores**.
 
 ```{r}
 Start <- Sys.time()
-for (i in 1:10)
+for (i in 1:4000){
   mean(rnorm(100000, mean = 10, sd = 3))
 }
 SerTime <- Sys.time() - Start
@@ -52,17 +52,17 @@ PredTime
 ```
 
 ```{r}
-pred_timediff <- SerTime - PredTime
+pred_timediff <- SerTime - PredTime # Expected time saved
 pred_timediff
 ```
 
-Since my computer has 8 cores, the time to run 8 simultaneous loops is around 3.3 seconds. Therefore, the run time improved by 23 seconds.
+Since my system has **8 cores**, the predicted runtime is **approximately 1/8th of the serial execution time**. The estimated time improvement is around **29.8 seconds**.
 
 ## 8. Running the loop in parallel and 9. Calculating new run time
 
 ```{r}
 # Setting up
-cores <- detectCores() - 1
+cores <- detectCores() - 1 # Using 7 cores to avoid system overload
 cluster <- makeCluster(cores)
 registerDoParallel(cluster)
 
@@ -82,12 +82,12 @@ print(ParaTime)
 ## 10. Comparing serial loop time vs parallel loop time
 
 ```{r}
-test_timediff <- SerTime - ParaTime
-print(test_timediff)
+time_saved <- SerTime - ParaTime # Actual time saved
+print(time_saved)
 ```
 
 ```{r}
 ParaTime - PredTime
 ```
 
-The **serial loop** time was around **25 seconds longer** than the **parallel** time. Additionally, the **real parallel** time was around **10 seconds longer** than the **predicted**. This is likely due to the additional steps involved in the parallel loop. These steps include the printing of the output for each iteration which occurs by default in the foreach() function, the assignment of that output to a variable, only 7 out of the 8 cores were used, and finally, it takes time to combine the chunks with combine=rbind which futher extends the run time.
+The parallel loop was approximately **21.4 seconds faster** than the serial loop. However, the actual parallel execution time was **8.5 seconds longer** than the theoretical prediction. This discrepancy is due to the initializing of clusters, the printing of iteration results, and the utilization of only 7 out of 8 cores. Most importantly however, **data merging** (combine = rbind) added extra computation time, as it was necessary to merge results from parallel loops, leading to a slower-than-expected runtime.
